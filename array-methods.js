@@ -7,12 +7,33 @@ var dataset = require("./dataset.json");
 */
 var hundredThousandairs = null;
 
-hundredThousandairs = dataset.bankBalances.filter(function(obj) {
-  return obj.amount > 100000;
+hundredThousandairs = dataset.bankBalances.filter(function(element) {
+  return element.amount > 100000;
 });
+
+// function greaterThan(element) {
+//   return element.amount > 100000;
+// }
+
+// hundredThousandairs = dataset.bankBalances.filter(greaterThan());
 
 // set sumOfBankBalances to be the sum of all value held at `amount` for each bank object
 var sumOfBankBalances = null;
+
+sumOfBankBalances = dataset.bankBalances.reduce(function(
+  accumulator,
+  currentValue
+) {
+  return accumulator + parseInt(currentValue.amount);
+},
+0);
+
+// function addBalances(obj) {
+//   let sum = sum + obj.amount;
+//   return sum;
+// }
+
+// sumOfBankBalances = dataset.bankBalances.reduce(addBalances(obj));
 
 /*
   from each of the following states:
