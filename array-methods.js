@@ -7,33 +7,24 @@ var dataset = require("./dataset.json");
 */
 var hundredThousandairs = null;
 
-hundredThousandairs = dataset.bankBalances.filter(function(element) {
-  return element.amount > 100000;
-});
-
-// function greaterThan(element) {
+// hundredThousandairs = dataset.bankBalances.filter(function(element) {
 //   return element.amount > 100000;
-// }
+// });
 
-// hundredThousandairs = dataset.bankBalances.filter(greaterThan());
+function greaterThan(element) {
+  return element.amount > 100000;
+}
+
+hundredThousandairs = dataset.bankBalances.filter(greaterThan);
 
 // set sumOfBankBalances to be the sum of all value held at `amount` for each bank object
 var sumOfBankBalances = null;
 
-sumOfBankBalances = dataset.bankBalances.reduce(function(
-  accumulator,
-  currentValue
-) {
-  return accumulator + parseInt(currentValue.amount);
-},
-0);
+function addBalances(total, element) {
+  return total + parseInt(element.amount);
+}
 
-// function addBalances(obj) {
-//   let sum = sum + obj.amount;
-//   return sum;
-// }
-
-// sumOfBankBalances = dataset.bankBalances.reduce(addBalances(obj));
+sumOfBankBalances = dataset.bankBalances.reduce(addBalances, 0);
 
 /*
   from each of the following states:
@@ -47,6 +38,25 @@ sumOfBankBalances = dataset.bankBalances.reduce(function(
   and then sum it all up into one value saved to `sumOfInterests`
  */
 var sumOfInterests = null;
+
+function stateFilter(element) {
+  return (
+    element.state === "WI" ||
+    element.state === "IL" ||
+    element.state === "WY" ||
+    element.state === "OH" ||
+    element.state === "GA" ||
+    element.state === "DE"
+  );
+}
+
+function sumInterest(total, element) {
+  return total + parseInt(Math.round(element.amount * 0.189));
+}
+
+sumOfInterests = dataset.bankBalances
+  .filter(stateFilter)
+  .reduce(sumInterest, 0);
 
 /*
   aggregate the sum of bankBalance amounts
