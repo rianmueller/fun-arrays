@@ -7,24 +7,18 @@ var dataset = require("./dataset.json");
 */
 var hundredThousandairs = null;
 
-// hundredThousandairs = dataset.bankBalances.filter(function(element) {
-//   return element.amount > 100000;
-// });
-
-function greaterThan(element) {
+hundredThousandairs = dataset.bankBalances.filter(function(element) {
   return element.amount > 100000;
-}
+});
 
-hundredThousandairs = dataset.bankBalances.filter(greaterThan);
+console.log(hundredThousandairs);
 
 // set sumOfBankBalances to be the sum of all value held at `amount` for each bank object
 var sumOfBankBalances = null;
 
-function addBalances(total, element) {
+sumOfBankBalances = dataset.bankBalances.reduce(function(total, element) {
   return total + parseInt(element.amount);
-}
-
-sumOfBankBalances = dataset.bankBalances.reduce(addBalances, 0);
+}, 0);
 
 /*
   from each of the following states:
@@ -39,24 +33,20 @@ sumOfBankBalances = dataset.bankBalances.reduce(addBalances, 0);
  */
 var sumOfInterests = null;
 
-function stateFilter(element) {
-  return (
-    element.state === "WI" ||
-    element.state === "IL" ||
-    element.state === "WY" ||
-    element.state === "OH" ||
-    element.state === "GA" ||
-    element.state === "DE"
-  );
-}
-
-function sumInterest(total, element) {
-  return total + parseInt(Math.round(element.amount * 0.189));
-}
-
 sumOfInterests = dataset.bankBalances
-  .filter(stateFilter)
-  .reduce(sumInterest, 0);
+  .filter(function(element) {
+    return (
+      element.state === "WI" ||
+      element.state === "IL" ||
+      element.state === "WY" ||
+      element.state === "OH" ||
+      element.state === "GA" ||
+      element.state === "DE"
+    );
+  })
+  .reduce(function(total, element) {
+    return total + parseInt(Math.round(element.amount * 0.189));
+  }, 0);
 
 /*
   aggregate the sum of bankBalance amounts
@@ -69,12 +59,26 @@ sumOfInterests = dataset.bankBalances
     the sum of all amounts from that state
     the value must be rounded to the nearest dollar
 
+    {'HI': '100000',
+     'OR': '200000',
+     'WA': '150000'}
+
   note: During your summation (
     if at any point durig your calculation where the number looks like `2486552.9779399997`
     round this number to the nearest dollar before moving on.
   )
  */
-var stateSums = null;
+
+var stateSums = {};
+
+stateSums = dataset.bankBalances.reduce(function(accumulator, element) {
+  if (element.state in accumulator) {
+    accumulator[element.state] += parseInt(Math.round(element.amount));
+  } else {
+    accumulator[element.state] = parseInt(Math.round(element.amount));
+  }
+  return accumulator;
+}, {});
 
 /*
   for all states *NOT* in the following states:
