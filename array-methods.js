@@ -1,4 +1,4 @@
-var dataset = require('./dataset.json');
+var dataset = require("./dataset.json");
 
 /*
   create an array with accounts from bankBalances that are
@@ -7,8 +7,16 @@ var dataset = require('./dataset.json');
 */
 var hundredThousandairs = null;
 
+hundredThousandairs = dataset.bankBalances.filter(function(element) {
+  return element.amount > 100000;
+});
+
 // set sumOfBankBalances to be the sum of all value held at `amount` for each bank object
 var sumOfBankBalances = null;
+
+sumOfBankBalances = dataset.bankBalances.reduce(function(total, element) {
+  return total + parseInt(element.amount);
+}, 0);
 
 /*
   from each of the following states:
@@ -21,7 +29,32 @@ var sumOfBankBalances = null;
   take each `amount` and add 18.9% interest to it rounded to the nearest dollar 
   and then sum it all up into one value saved to `sumOfInterests`
  */
+
 var sumOfInterests = null;
+
+sumOfInterests = dataset.bankBalances
+  // 1) Filter out WI, IL, WY, OH, GA, DE
+  .filter(function(element) {
+    return (
+      element.state === "WI" ||
+      element.state === "IL" ||
+      element.state === "WY" ||
+      element.state === "OH" ||
+      element.state === "GA" ||
+      element.state === "DE"
+    );
+  })
+  // 2) Map 18.9% onto each amount
+  .map(function(element) {
+    return {
+      amount: Math.round(parseInt(element.amount) * 0.189),
+      state: element.state
+    };
+  })
+  // 3) Reduce all amounts into a single sum
+  .reduce(function(total, element) {
+    return total + element.amount;
+  }, 0);
 
 /*
   aggregate the sum of bankBalance amounts
@@ -34,12 +67,26 @@ var sumOfInterests = null;
     the sum of all amounts from that state
     the value must be rounded to the nearest dollar
 
+    {'HI': '100000',
+     'OR': '200000',
+     'WA': '150000'}
+
   note: During your summation (
     if at any point durig your calculation where the number looks like `2486552.9779399997`
     round this number to the nearest dollar before moving on.
   )
  */
-var stateSums = null;
+
+var stateSums = {};
+
+stateSums = dataset.bankBalances.reduce(function(accumulator, element) {
+  if (element.state in accumulator) {
+    accumulator[element.state] += Math.round(element.amount);
+  } else {
+    accumulator[element.state] = Math.round(element.amount);
+  }
+  return accumulator;
+}, {});
 
 /*
   for all states *NOT* in the following states:
@@ -60,6 +107,47 @@ var stateSums = null;
  */
 var sumOfHighInterests = null;
 
+sumOfHighInterests = Object.entries(
+  dataset.bankBalances
+    // 1) Filter out WI, IL, WY, OH, GA, DE
+    .filter(function(element) {
+      return (
+        element.state !== "WI" &&
+        element.state !== "IL" &&
+        element.state !== "WY" &&
+        element.state !== "OH" &&
+        element.state !== "GA" &&
+        element.state !== "DE"
+      );
+    })
+    // 2) Reduce each state to a single sum
+    .reduce(function(accumulator, element) {
+      if (element.state in accumulator) {
+        accumulator[element.state] += Math.round(element.amount);
+      } else {
+        accumulator[element.state] = Math.round(element.amount);
+      }
+      return accumulator;
+    }, {})
+)
+  // 3) Map 18.9% onto each state sum
+  // (and convert back to an array of objects)
+  .map(function(element) {
+    let object = {
+      amount: Math.round(parseInt(element[1]) * 0.189),
+      state: element[0]
+    };
+    return object;
+  })
+  // 4) Filter out the interest values that are 50,000 or less
+  .filter(function(element) {
+    return element.amount > 50000;
+  })
+  // 5) Reduce the interest values to a single sum
+  .reduce(function(total, element) {
+    return total + parseInt(element.amount);
+  }, 0);
+
 /*
   set `lowerSumStates` to be an array of two letter state
   abbreviations of each state where the sum of amounts
@@ -67,11 +155,46 @@ var sumOfHighInterests = null;
  */
 var lowerSumStates = null;
 
+lowerSumStates = Object.entries(
+  dataset.bankBalances.reduce(function(accumulator, element) {
+    if (element.state in accumulator) {
+      accumulator[element.state] += Math.round(element.amount);
+    } else {
+      accumulator[element.state] = Math.round(element.amount);
+    }
+    return accumulator;
+  }, {})
+)
+  .filter(function(element) {
+    return element[1] < 1000000;
+  })
+  .map(function(element) {
+    return element[0];
+  });
+
 /*
   aggregate the sum of each state into one hash table
   `higherStateSums` should be the sum of all states with totals greater than 1,000,000
  */
 var higherStateSums = null;
+
+higherStateSums = Object.entries(
+  // hash table
+  dataset.bankBalances.reduce(function(accumulator, element) {
+    if (element.state in accumulator) {
+      accumulator[element.state] += Math.round(element.amount);
+    } else {
+      accumulator[element.state] = Math.round(element.amount);
+    }
+    return accumulator;
+  }, {})
+)
+  .filter(function(element) {
+    return element[1] > 1000000;
+  })
+  .reduce(function(total, element) {
+    return total + parseInt(element[1]);
+  }, 0);
 
 /*
   from each of the following states:
@@ -90,6 +213,30 @@ var higherStateSums = null;
  */
 var areStatesInHigherStateSum = null;
 
+areStatesInHigherStateSum = Object.entries(
+  dataset.bankBalances
+    .filter(function(element) {
+      return (
+        element.state === "WI" ||
+        element.state === "IL" ||
+        element.state === "WY" ||
+        element.state === "OH" ||
+        element.state === "GA" ||
+        element.state === "DE"
+      );
+    })
+    .reduce(function(accumulator, element) {
+      if (element.state in accumulator) {
+        accumulator[element.state] += Math.round(element.amount);
+      } else {
+        accumulator[element.state] = Math.round(element.amount);
+      }
+      return accumulator;
+    }, {})
+).every(function(element) {
+  return element[1] > 2550000;
+});
+
 /*
   Stretch Goal && Final Boss
 
@@ -106,15 +253,38 @@ var areStatesInHigherStateSum = null;
  */
 var anyStatesInHigherStateSum = null;
 
+anyStatesInHigherStateSum = Object.entries(
+  dataset.bankBalances
+    .filter(function(element) {
+      return (
+        element.state === "WI" ||
+        element.state === "IL" ||
+        element.state === "WY" ||
+        element.state === "OH" ||
+        element.state === "GA" ||
+        element.state === "DE"
+      );
+    })
+    .reduce(function(accumulator, element) {
+      if (element.state in accumulator) {
+        accumulator[element.state] += Math.round(element.amount);
+      } else {
+        accumulator[element.state] = Math.round(element.amount);
+      }
+      return accumulator;
+    }, {})
+).some(function(element) {
+  return element[1] > 2550000;
+});
 
 module.exports = {
-  hundredThousandairs : hundredThousandairs,
-  sumOfBankBalances : sumOfBankBalances,
-  sumOfInterests : sumOfInterests,
-  sumOfHighInterests : sumOfHighInterests,
-  stateSums : stateSums,
-  lowerSumStates : lowerSumStates,
-  higherStateSums : higherStateSums,
-  areStatesInHigherStateSum : areStatesInHigherStateSum,
-  anyStatesInHigherStateSum : anyStatesInHigherStateSum
+  hundredThousandairs: hundredThousandairs,
+  sumOfBankBalances: sumOfBankBalances,
+  sumOfInterests: sumOfInterests,
+  sumOfHighInterests: sumOfHighInterests,
+  stateSums: stateSums,
+  lowerSumStates: lowerSumStates,
+  higherStateSums: higherStateSums,
+  areStatesInHigherStateSum: areStatesInHigherStateSum,
+  anyStatesInHigherStateSum: anyStatesInHigherStateSum
 };
