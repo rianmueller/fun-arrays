@@ -215,7 +215,6 @@ var areStatesInHigherStateSum = null;
 
 areStatesInHigherStateSum = Object.entries(
   dataset.bankBalances
-    // 1) Filter for WI, IL, WY, OH, GA, DE
     .filter(function(element) {
       return (
         element.state === "WI" ||
@@ -238,8 +237,6 @@ areStatesInHigherStateSum = Object.entries(
   return element[1] > 2550000;
 });
 
-console.log(areStatesInHigherStateSum);
-
 /*
   Stretch Goal && Final Boss
 
@@ -255,6 +252,30 @@ console.log(areStatesInHigherStateSum);
   otherwise set it to be `false`
  */
 var anyStatesInHigherStateSum = null;
+
+anyStatesInHigherStateSum = Object.entries(
+  dataset.bankBalances
+    .filter(function(element) {
+      return (
+        element.state === "WI" ||
+        element.state === "IL" ||
+        element.state === "WY" ||
+        element.state === "OH" ||
+        element.state === "GA" ||
+        element.state === "DE"
+      );
+    })
+    .reduce(function(accumulator, element) {
+      if (element.state in accumulator) {
+        accumulator[element.state] += Math.round(element.amount);
+      } else {
+        accumulator[element.state] = Math.round(element.amount);
+      }
+      return accumulator;
+    }, {})
+).some(function(element) {
+  return element[1] > 2550000;
+});
 
 module.exports = {
   hundredThousandairs: hundredThousandairs,
