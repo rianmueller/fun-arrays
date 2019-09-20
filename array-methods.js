@@ -30,13 +30,10 @@ sumOfBankBalances = dataset.bankBalances.reduce(function(total, element) {
   and then sum it all up into one value saved to `sumOfInterests`
  */
 
-// 1) Filter out WI, IL, WY, OH, GA, DE
-// 2) Map 18.9% onto each amount
-// 3) Reduce all amounts into a single sum
-
 var sumOfInterests = null;
 
 sumOfInterests = dataset.bankBalances
+  // 1) Filter out WI, IL, WY, OH, GA, DE
   .filter(function(element) {
     return (
       element.state === "WI" ||
@@ -47,12 +44,14 @@ sumOfInterests = dataset.bankBalances
       element.state === "DE"
     );
   })
+  // 2) Map 18.9% onto each amount
   .map(function(element) {
     return {
       amount: Math.round(parseInt(element.amount) * 0.189),
       state: element.state
     };
   })
+  // 3) Reduce all amounts into a single sum
   .reduce(function(total, element) {
     return total + element.amount;
   }, 0);
@@ -88,7 +87,6 @@ stateSums = dataset.bankBalances.reduce(function(accumulator, element) {
   }
   return accumulator;
 }, {});
-console.log(stateSums);
 
 /*
   for all states *NOT* in the following states:
@@ -109,12 +107,6 @@ console.log(stateSums);
  */
 var sumOfHighInterests = null;
 
-// 1) Filter out WI, IL, WY, OH, GA, DE
-// 2) Reduce each state to a single sum
-// 3) Map 18.9% onto each state sum
-// 4) Filter out the interest values that are 50,000 or less
-// 5) Reduce the interest values to a single sum
-
 sumOfHighInterests = Object.entries(
   dataset.bankBalances
     // 1) Filter out WI, IL, WY, OH, GA, DE
@@ -128,6 +120,7 @@ sumOfHighInterests = Object.entries(
         element.state !== "DE"
       );
     })
+    // 2) Reduce each state to a single sum
     .reduce(function(accumulator, element) {
       if (element.state in accumulator) {
         accumulator[element.state] += Math.round(element.amount);
@@ -155,14 +148,31 @@ sumOfHighInterests = Object.entries(
     return total + parseInt(element.amount);
   }, 0);
 
-console.log(sumOfHighInterests);
-
 /*
   set `lowerSumStates` to be an array of two letter state
   abbreviations of each state where the sum of amounts
   in the state is less than 1,000,000
  */
 var lowerSumStates = null;
+
+lowerSumStates = Object.entries(
+  dataset.bankBalances.reduce(function(accumulator, element) {
+    if (element.state in accumulator) {
+      accumulator[element.state] += Math.round(element.amount);
+    } else {
+      accumulator[element.state] = Math.round(element.amount);
+    }
+    return accumulator;
+  }, {})
+)
+  .filter(function(element) {
+    return element[1] < 1000000;
+  })
+  .map(function(element) {
+    return element[0];
+  });
+
+console.log(lowerSumStates);
 
 /*
   aggregate the sum of each state into one hash table
