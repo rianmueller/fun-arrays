@@ -196,8 +196,6 @@ higherStateSums = Object.entries(
     return total + parseInt(element[1]);
   }, 0);
 
-console.log(higherStateSums);
-
 /*
   from each of the following states:
     Wisconsin
@@ -214,6 +212,33 @@ console.log(higherStateSums);
   otherwise set it to `false`
  */
 var areStatesInHigherStateSum = null;
+
+areStatesInHigherStateSum = Object.entries(
+  dataset.bankBalances
+    // 1) Filter for WI, IL, WY, OH, GA, DE
+    .filter(function(element) {
+      return (
+        element.state === "WI" ||
+        element.state === "IL" ||
+        element.state === "WY" ||
+        element.state === "OH" ||
+        element.state === "GA" ||
+        element.state === "DE"
+      );
+    })
+    .reduce(function(accumulator, element) {
+      if (element.state in accumulator) {
+        accumulator[element.state] += Math.round(element.amount);
+      } else {
+        accumulator[element.state] = Math.round(element.amount);
+      }
+      return accumulator;
+    }, {})
+).every(function(element) {
+  return element[1] > 2550000;
+});
+
+console.log(areStatesInHigherStateSum);
 
 /*
   Stretch Goal && Final Boss
