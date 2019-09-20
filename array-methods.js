@@ -172,13 +172,31 @@ lowerSumStates = Object.entries(
     return element[0];
   });
 
-console.log(lowerSumStates);
-
 /*
   aggregate the sum of each state into one hash table
   `higherStateSums` should be the sum of all states with totals greater than 1,000,000
  */
 var higherStateSums = null;
+
+higherStateSums = Object.entries(
+  // hash table
+  dataset.bankBalances.reduce(function(accumulator, element) {
+    if (element.state in accumulator) {
+      accumulator[element.state] += Math.round(element.amount);
+    } else {
+      accumulator[element.state] = Math.round(element.amount);
+    }
+    return accumulator;
+  }, {})
+)
+  .filter(function(element) {
+    return element[1] > 1000000;
+  })
+  .reduce(function(total, element) {
+    return total + parseInt(element[1]);
+  }, 0);
+
+console.log(higherStateSums);
 
 /*
   from each of the following states:
