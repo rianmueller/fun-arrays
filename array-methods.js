@@ -11,8 +11,6 @@ hundredThousandairs = dataset.bankBalances.filter(function(element) {
   return element.amount > 100000;
 });
 
-console.log(hundredThousandairs);
-
 // set sumOfBankBalances to be the sum of all value held at `amount` for each bank object
 var sumOfBankBalances = null;
 
@@ -31,6 +29,11 @@ sumOfBankBalances = dataset.bankBalances.reduce(function(total, element) {
   take each `amount` and add 18.9% interest to it rounded to the nearest dollar 
   and then sum it all up into one value saved to `sumOfInterests`
  */
+
+// 1) Filter out WI, IL, WY, OH, GA, DE
+// 2) Map 18.9% onto each amount
+// 3) Reduce all amounts into a single sum
+
 var sumOfInterests = null;
 
 sumOfInterests = dataset.bankBalances
@@ -44,8 +47,14 @@ sumOfInterests = dataset.bankBalances
       element.state === "DE"
     );
   })
+  .map(function(element) {
+    return {
+      amount: Math.round(parseInt(element.amount) * 0.189),
+      state: element.state
+    };
+  })
   .reduce(function(total, element) {
-    return total + parseInt(Math.round(element.amount * 0.189));
+    return total + element.amount;
   }, 0);
 
 /*
@@ -73,12 +82,13 @@ var stateSums = {};
 
 stateSums = dataset.bankBalances.reduce(function(accumulator, element) {
   if (element.state in accumulator) {
-    accumulator[element.state] += parseInt(Math.round(element.amount));
+    accumulator[element.state] += Math.round(element.amount);
   } else {
-    accumulator[element.state] = parseInt(Math.round(element.amount));
+    accumulator[element.state] = Math.round(element.amount);
   }
   return accumulator;
 }, {});
+console.log(stateSums);
 
 /*
   for all states *NOT* in the following states:
@@ -98,6 +108,54 @@ stateSums = dataset.bankBalances.reduce(function(accumulator, element) {
   )
  */
 var sumOfHighInterests = null;
+
+// 1) Filter out WI, IL, WY, OH, GA, DE
+// 2) Reduce each state to a single sum
+// 3) Map 18.9% onto each state sum
+// 4) Filter out the interest values that are 50,000 or less
+// 5) Reduce the interest values to a single sum
+
+sumOfHighInterests = Object.entries(
+  dataset.bankBalances
+    // 1) Filter out WI, IL, WY, OH, GA, DE
+    .filter(function(element) {
+      return (
+        element.state !== "WI" &&
+        element.state !== "IL" &&
+        element.state !== "WY" &&
+        element.state !== "OH" &&
+        element.state !== "GA" &&
+        element.state !== "DE"
+      );
+    })
+    .reduce(function(accumulator, element) {
+      if (element.state in accumulator) {
+        accumulator[element.state] += Math.round(element.amount);
+      } else {
+        accumulator[element.state] = Math.round(element.amount);
+      }
+      return accumulator;
+    }, {})
+)
+  // 3) Map 18.9% onto each state sum
+  // (and convert back to an array of objects)
+  .map(function(element) {
+    let object = {
+      amount: Math.round(parseInt(element[1]) * 0.189),
+      state: element[0]
+    };
+    return object;
+  })
+  // 4) Filter out the interest values that are 50,000 or less
+  .filter(function(element) {
+    return element.amount > 50000;
+  })
+  // 5) Reduce the interest values to a single sum
+  .reduce(function(total, element) {
+    return total + parseInt(element.amount);
+  }, 0);
+
+console.log(sumOfHighInterests);
 
 /*
   set `lowerSumStates` to be an array of two letter state
